@@ -1,0 +1,7 @@
+// Release Build Configuration
+
+API_BASE_URL = https://api.koyozo.com
+API_KEY = ${API_KEY}
+ENABLE_ANALYTICS = YES
+BUILD_CONFIGURATION = Release
+

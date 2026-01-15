@@ -1,0 +1,23 @@
+# SwiftFormat Configuration
+
+# Indentation
+--indent 4
+--tabwidth 4
+
+# Line length
+--maxwidth 120
+
+# Spacing
+--operatorfunc spaced
+--nospaceoperators
+--ranges spaced
+
+# Wrapping
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+
+# Other
+--disable blankLinesAtStartOfScope
+--enable isEmpty
+

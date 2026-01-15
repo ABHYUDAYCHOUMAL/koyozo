@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCtgNva9ZuWQVhxzCvhQ2aZNM4-HmByZQ0</string>
+	<key>GCM_SENDER_ID</key>
+	<string>366048506180</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.koyozo.koyozoclub</string>
+	<key>PROJECT_ID</key>
+	<string>koyozo</string>
+	<key>STORAGE_BUCKET</key>
+	<string>koyozo.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true/>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:366048506180:ios:3fb9c60688a6a2a6a02711</string>
+	<key>CLIENT_ID</key>
+	<string>366048506180-gcqa2lfeviv91eorttmtps0jl4q2jqj5.apps.googleusercontent.com</string>
+</dict>
+</plist>
+

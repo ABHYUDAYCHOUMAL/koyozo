@@ -1,0 +1,7 @@
+// Debug Build Configuration
+
+API_BASE_URL = https://api-dev.koyozo.com
+API_KEY = ${API_KEY}
+ENABLE_ANALYTICS = NO
+BUILD_CONFIGURATION = Debug
+
