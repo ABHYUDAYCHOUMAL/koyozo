@@ -12,6 +12,8 @@ struct GameMapper {
         Game(
             id: dto.id,
             title: dto.title,
+            category: dto.category,
+            customURLScheme: dto.customURLScheme,
             thumbnailURL: dto.thumbnailURL,
             backgroundURL: dto.backgroundURL,
             description: dto.description,

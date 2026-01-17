@@ -98,7 +98,13 @@ class LoginViewModel: ViewModelProtocol {
                     // Set flag to show login snackbar
                     UserSessionManager.shared.setShouldShowLoginSnackbar(true)
                     // Navigate to main app after successful login - clear path so no back button
-                    onNavigate?(.gameLibrary)
+                    
+                    // Check if user has seen onboarding
+                                    if OnboardingManager.shared.hasSeenOnboarding() {
+                                        onNavigate?(.gameLibrary)
+                                    } else {
+                                        onNavigate?(.onboarding)
+                                    }
                 }
             } catch {
                 await MainActor.run {

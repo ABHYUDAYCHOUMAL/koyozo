@@ -7,6 +7,8 @@ import Foundation
 struct GameDTO: Codable {
     let id: String
     let title: String
+    let category: String?
+    let customURLScheme: String?
     let thumbnailURL: String?
     let backgroundURL: String?
     let description: String?
@@ -21,6 +23,8 @@ struct GameDTO: Codable {
     enum CodingKeys: String, CodingKey {
         case id
         case title
+        case category = "category"
+        case customURLScheme = "custom_url_scheme"
         case thumbnailURL = "thumbnail_url"
         case backgroundURL = "background_url"
         case description
@@ -36,6 +40,8 @@ struct GameDTO: Codable {
     init(
         id: String,
         title: String,
+        category: String?,
+        customURLScheme: String?,
         thumbnailURL: String?,
         backgroundURL: String?,
         description: String?,
@@ -49,6 +55,8 @@ struct GameDTO: Codable {
     ) {
         self.id = id
         self.title = title
+        self.category = category
+        self.customURLScheme = customURLScheme
         self.thumbnailURL = thumbnailURL
         self.backgroundURL = backgroundURL
         self.description = description
@@ -77,6 +85,8 @@ struct GameDTO: Codable {
         }
         
         title = try container.decode(String.self, forKey: .title)
+        category = try container.decodeIfPresent(String.self, forKey: .category)
+        customURLScheme = try container.decodeIfPresent(String.self, forKey: .customURLScheme)
         thumbnailURL = try container.decodeIfPresent(String.self, forKey: .thumbnailURL)
         backgroundURL = try container.decodeIfPresent(String.self, forKey: .backgroundURL)
         description = try container.decodeIfPresent(String.self, forKey: .description)
@@ -93,7 +103,8 @@ struct GameDTO: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(title, forKey: .title)
-        try container.encodeIfPresent(thumbnailURL, forKey: .thumbnailURL)
+        try container.encodeIfPresent(category, forKey: .category)
+        try container.encodeIfPresent(customURLScheme, forKey: .customURLScheme)
         try container.encodeIfPresent(backgroundURL, forKey: .backgroundURL)
         try container.encodeIfPresent(description, forKey: .description)
         try container.encodeIfPresent(launchURL, forKey: .launchURL)
@@ -117,4 +128,3 @@ struct FirestoreTimestampDTO: Codable {
         case nanoseconds = "_nanoseconds"
     }
 }
-

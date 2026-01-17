@@ -1,5 +1,4 @@
-//
-//  koyozoclubApp.swift
+// koyozoclub/koyozoclubApp.swift
 import SwiftUI
 
 @main
@@ -8,6 +7,7 @@ struct koyozoclubApp: App {
     @StateObject private var coordinator = AppCoordinator()
     @State private var isCheckingSession = true
     @State private var isLoggedIn = false
+    @State private var shouldShowOnboarding = false
     
     init() {
         ControllerManager.shared.startMonitoring()
@@ -18,7 +18,7 @@ struct koyozoclubApp: App {
             NavigationStack(path: $coordinator.navigationPath) {
                 Group {
                     if isCheckingSession {
-                        // Show a loading state while checking session
+                        // Show loading
                         ZStack {
                             AppTheme.Colors.darkBlue
                             ProgressView()
@@ -28,10 +28,18 @@ struct koyozoclubApp: App {
                             checkSession()
                         }
                     } else if isLoggedIn {
-                        // User is logged in, show GameLibraryView
-                        GameLibraryView()
+                        // Show GameLibrary with optional onboarding overlay
+                        ZStack {
+                            GameLibraryView()
+                            
+                            // Show onboarding as overlay if needed
+                            if shouldShowOnboarding {
+                                OnboardingView()
+                                    .transition(.opacity)
+                            }
+                        }
                     } else {
-                        // User is not logged in, show LoginView
+                        // Show login
                         LoginView()
                     }
                 }
@@ -46,8 +54,16 @@ struct koyozoclubApp: App {
     private func checkSession() {
         Task {
             let loggedIn = await UserSessionManager.shared.isLoggedIn()
+            
             await MainActor.run {
                 isLoggedIn = loggedIn
+                
+                if loggedIn {
+                    shouldShowOnboarding = !OnboardingManager.shared.hasSeenOnboarding()
+                } else {
+                    shouldShowOnboarding = false
+                }
+                
                 isCheckingSession = false
             }
         }
@@ -70,6 +86,11 @@ struct koyozoclubApp: App {
             ResetPasswordView()
         case .setPassword(let email, let isSignup):
             SetPasswordView(email: email, isSignup: isSignup)
+        case .onboarding:
+            ZStack {
+                GameLibraryView()
+                OnboardingView()
+            }
         case .gameLibrary:
             GameLibraryView()
         case .allGames(let showSearch):

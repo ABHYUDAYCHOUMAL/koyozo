@@ -88,7 +88,8 @@ class UserInformationViewModel: ViewModelProtocol {
                     // Set flag to show login snackbar
                     UserSessionManager.shared.setShouldShowLoginSnackbar(true)
                     // Navigate to main app after successful registration
-                    onNavigate?(.gameLibrary)
+                    // First-time signup users should see onboarding
+                    onNavigate?(.onboarding)
                 }
             } catch {
                 await MainActor.run {

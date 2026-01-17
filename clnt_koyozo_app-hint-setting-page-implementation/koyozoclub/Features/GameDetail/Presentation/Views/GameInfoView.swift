@@ -23,6 +23,8 @@ struct GameInfoView: View {
     GameInfoView(game: Game(
         id: "1",
         title: "Test Game",
+        category: "",
+        customURLScheme: "",
         thumbnailURL: "",
         backgroundURL: nil,
         description: nil,

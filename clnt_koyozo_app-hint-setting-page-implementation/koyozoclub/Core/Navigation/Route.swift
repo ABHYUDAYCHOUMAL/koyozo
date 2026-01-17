@@ -10,6 +10,7 @@ enum Route: Hashable {
     case userInformation(email: String, password: String)
     case resetPassword
     case setPassword(email: String, isSignup: Bool = false) // isSignup = true means it's part of signup flow
+    case onboarding  // Added for onboard flow
     case gameLibrary
     case allGames(showSearch: Bool)
     case search

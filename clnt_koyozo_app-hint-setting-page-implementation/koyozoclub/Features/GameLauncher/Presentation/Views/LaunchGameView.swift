@@ -34,6 +34,8 @@ struct LaunchGameView: View {
         game: Game(
             id: "1",
             title: "Test Game",
+            category: "",
+            customURLScheme: "",
             thumbnailURL: "",
             backgroundURL: nil,
             description: nil,

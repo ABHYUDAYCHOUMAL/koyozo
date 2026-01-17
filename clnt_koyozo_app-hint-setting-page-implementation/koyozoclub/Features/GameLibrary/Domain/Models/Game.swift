@@ -7,6 +7,8 @@ import Foundation
 struct Game: Codable, Identifiable, Hashable {
     let id: String
     let title: String
+    let category: String?
+    let customURLScheme: String?
     let thumbnailURL: String?
     let backgroundURL: String?
     let description: String?
@@ -17,6 +19,8 @@ struct Game: Codable, Identifiable, Hashable {
     enum CodingKeys: String, CodingKey {
         case id
         case title
+        case category
+        case customURLScheme = "customURLScheme"
         case thumbnailURL = "thumbnail_url"
         case backgroundURL = "background_url"
         case description
@@ -29,6 +33,8 @@ struct Game: Codable, Identifiable, Hashable {
     init(
         id: String,
         title: String,
+        category: String?,
+        customURLScheme: String?,
         thumbnailURL: String?,
         backgroundURL: String?,
         description: String?,
@@ -38,6 +44,8 @@ struct Game: Codable, Identifiable, Hashable {
     ) {
         self.id = id
         self.title = title
+        self.category = category
+        self.customURLScheme = customURLScheme
         self.thumbnailURL = thumbnailURL
         self.backgroundURL = backgroundURL
         self.description = description

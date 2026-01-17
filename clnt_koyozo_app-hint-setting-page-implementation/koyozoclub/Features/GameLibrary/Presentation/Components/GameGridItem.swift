@@ -16,6 +16,8 @@ struct GameGridItem: View {
         game: Game(
             id: "1",
             title: "Sample Game",
+            category: "",
+            customURLScheme: "",
             thumbnailURL: "",
             backgroundURL: nil,
             description: nil,

@@ -86,6 +86,8 @@ struct RoundedCorner: Shape {
             game: Game(
                 id: "1",
                 title: "This is a very long game title that will scroll",
+                category: "Action, Adventure, Platformer",
+                customURLScheme: "",
                 thumbnailURL: "https://via.placeholder.com/400x600/0066FF/FFFFFF?text=Game",
                 backgroundURL: nil,
                 description: nil,

@@ -65,4 +65,3 @@ struct iOSGameResponseDTO: Codable {
         errors ?? []
     }
 }
-

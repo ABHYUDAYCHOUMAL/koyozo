@@ -23,6 +23,23 @@ struct SettingsView: View {
                            value: $viewModel.preferences.sensitivity, 
                            in: 0...100)
                 }
+                Section("Developer") {
+                    Button("Reset Onboarding") {
+                        OnboardingManager.shared.resetOnboarding()
+                        // Optionally navigate back to onboarding
+                    }
+                }
+                
+                // Add to SettingsView.swift temporarily
+                Section("Debug") {
+                    Button("Reset Onboarding & Reload") {
+                        OnboardingManager.shared.resetOnboarding()
+                        // Force app to re-check session
+                        exit(0)  // App will restart
+                    }
+                    .foregroundColor(.red)
+                }
+                
             }
             .navigationTitle("Settings")
             .onChange(of: viewModel.preferences.notificationsEnabled) { _, _ in
