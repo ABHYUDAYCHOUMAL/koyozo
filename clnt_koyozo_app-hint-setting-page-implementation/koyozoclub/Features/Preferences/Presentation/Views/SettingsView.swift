@@ -23,6 +23,7 @@ struct SettingsView: View {
                            value: $viewModel.preferences.sensitivity, 
                            in: 0...100)
                 }
+                
                 Section("Developer") {
                     Button("Reset Onboarding") {
                         OnboardingManager.shared.resetOnboarding()

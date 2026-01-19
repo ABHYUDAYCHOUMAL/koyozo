@@ -103,6 +103,8 @@ struct koyozoclubApp: App {
             ProfileView()
         case .settings:
             SettingsView()
+        case .controllerSettings:
+            ControllerSettingsView()
         }
     }
 }

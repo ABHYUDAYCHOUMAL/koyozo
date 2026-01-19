@@ -20,7 +20,7 @@ struct Game: Codable, Identifiable, Hashable {
         case id
         case title
         case category
-        case customURLScheme = "customURLScheme"
+        case customURLScheme = "custom_url_scheme"
         case thumbnailURL = "thumbnail_url"
         case backgroundURL = "background_url"
         case description

@@ -23,7 +23,7 @@ struct GameDTO: Codable {
     enum CodingKeys: String, CodingKey {
         case id
         case title
-        case category = "category"
+        case category
         case customURLScheme = "custom_url_scheme"
         case thumbnailURL = "thumbnail_url"
         case backgroundURL = "background_url"
@@ -91,7 +91,19 @@ struct GameDTO: Codable {
         backgroundURL = try container.decodeIfPresent(String.self, forKey: .backgroundURL)
         description = try container.decodeIfPresent(String.self, forKey: .description)
         launchURL = try container.decodeIfPresent(String.self, forKey: .launchURL)
-        appStoreID = try container.decode(String.self, forKey: .appStoreID)
+        
+        // Handle app_store_id as either String or Int (from JSON)
+        if let appStoreIDString = try? container.decode(String.self, forKey: .appStoreID) {
+            appStoreID = appStoreIDString
+        } else if let appStoreIDInt = try? container.decode(Int.self, forKey: .appStoreID) {
+            appStoreID = String(appStoreIDInt)
+        } else {
+            let context = DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: "Expected app_store_id as String or Int"
+            )
+            throw DecodingError.dataCorrupted(context)
+        }
         rating = try container.decodeIfPresent(Double.self, forKey: .rating)
         ratingCount = try container.decodeIfPresent(Int.self, forKey: .ratingCount)
         popularityScore = try container.decodeIfPresent(Double.self, forKey: .popularityScore)
@@ -105,6 +117,7 @@ struct GameDTO: Codable {
         try container.encode(title, forKey: .title)
         try container.encodeIfPresent(category, forKey: .category)
         try container.encodeIfPresent(customURLScheme, forKey: .customURLScheme)
+        try container.encodeIfPresent(thumbnailURL, forKey: .thumbnailURL)
         try container.encodeIfPresent(backgroundURL, forKey: .backgroundURL)
         try container.encodeIfPresent(description, forKey: .description)
         try container.encodeIfPresent(launchURL, forKey: .launchURL)

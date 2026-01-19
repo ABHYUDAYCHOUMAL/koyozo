@@ -16,6 +16,7 @@ enum Route: Hashable {
     case search
     case favorites
     case profile
+    case controllerSettings // new setting
     case settings
 }
 

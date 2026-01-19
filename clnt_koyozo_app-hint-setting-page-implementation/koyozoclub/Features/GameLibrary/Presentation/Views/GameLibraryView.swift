@@ -44,6 +44,7 @@ struct GameLibraryView: View {
                 )
                 
                 // Top bar with icons
+                // Top bar with icons
                 VStack {
                     HStack {
                         Spacer()
@@ -76,15 +77,15 @@ struct GameLibraryView: View {
                                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isTopBarFocused && topBarSelectedIndex == 0)
                             }
                             
-                            // Settings icon in transparent circle
+                            // Controller Settings icon in transparent circle - NEW
                             Button(action: {
-                                coordinator.navigate(to: .settings)
+                                coordinator.navigate(to: .controllerSettings)
                             }) {
                                 ZStack {
                                     Circle()
                                         .fill(Color.white.opacity(0.2))
                                         .frame(width: 32, height: 32)
-                                    Image(systemName: "gearshape")
+                                    Image(systemName: "gamecontroller.fill")
                                         .font(.system(size: 18, weight: .semibold))
                                         .foregroundColor(AppTheme.Colors.text)
                                 }
@@ -102,6 +103,34 @@ struct GameLibraryView: View {
                                 )
                                 .scaleEffect(isTopBarFocused && topBarSelectedIndex == 1 ? 1.1 : 1.0)
                                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isTopBarFocused && topBarSelectedIndex == 1)
+                            }
+                            
+                            // Settings icon in transparent circle
+                            Button(action: {
+                                coordinator.navigate(to: .settings)
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.white.opacity(0.2))
+                                        .frame(width: 32, height: 32)
+                                    Image(systemName: "gearshape")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(AppTheme.Colors.text)
+                                }
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            isTopBarFocused && topBarSelectedIndex == 2 ? AppTheme.Colors.accent : Color.clear,
+                                            lineWidth: isTopBarFocused && topBarSelectedIndex == 2 ? 1.5 : 0
+                                        )
+                                        .frame(width: 36, height: 36)
+                                        .shadow(
+                                            color: isTopBarFocused && topBarSelectedIndex == 2 ? AppTheme.Colors.accent.opacity(0.8) : Color.clear,
+                                            radius: isTopBarFocused && topBarSelectedIndex == 2 ? 8 : 0
+                                        )
+                                )
+                                .scaleEffect(isTopBarFocused && topBarSelectedIndex == 2 ? 1.1 : 1.0)
+                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isTopBarFocused && topBarSelectedIndex == 2)
                             }
                             
                             // App icon
@@ -523,6 +552,9 @@ struct GameLibraryView: View {
                         // Search icon
                         coordinator.navigate(to: .allGames(showSearch: true))
                     } else if topBarSelectedIndex == 1 {
+                        // Controller Settings icon
+                        coordinator.navigate(to: .controllerSettings)
+                    } else if topBarSelectedIndex == 2 {
                         // Settings icon
                         coordinator.navigate(to: .settings)
                     }
@@ -620,7 +652,7 @@ struct GameLibraryView: View {
                 
                 // Handle top bar navigation
                 if isTopBarFocused {
-                    let nextIndex = min(1, topBarSelectedIndex + 1) // Only 2 icons: search (0) and settings (1)
+                    let nextIndex = min(2, topBarSelectedIndex + 1) // 3 icons: search (0), controller (1), settings (2)
                     if nextIndex != topBarSelectedIndex {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             topBarSelectedIndex = nextIndex
