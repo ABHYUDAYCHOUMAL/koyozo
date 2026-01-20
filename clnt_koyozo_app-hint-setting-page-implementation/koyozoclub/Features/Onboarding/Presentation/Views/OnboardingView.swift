@@ -35,7 +35,8 @@ struct OnboardingView: View {
                             ForEach(viewModel.pages) { page in
                                 OnboardingPageContentView(
                                     page: page,
-                                    geometry: geometry
+                                    geometry: geometry,
+                                    isCurrentPage: viewModel.currentPageIndex == page.id
                                 )
                                 .tag(page.id)
                             }
@@ -171,15 +172,15 @@ struct OnboardingView: View {
 struct OnboardingPageContentView: View {
     let page: OnboardingPage
     let geometry: GeometryProxy
+    let isCurrentPage: Bool
     
     var body: some View {
         VStack(spacing: Spacing.xl) {
             Spacer()
             
-            // Controller image placeholder with white background
-            ZStack
-            {
-                // White background for the image
+            // Video or image container
+            ZStack {
+                // Container background
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color.clear)
                     .frame(
@@ -187,26 +188,57 @@ struct OnboardingPageContentView: View {
                         height: min(200, geometry.size.width * 0.45)
                     )
                 
-                // Controlgler illustration or system icon
-                if page.id == 1 {
-                    // Use actual controller image
+                // Display video if available
+                if let videoName = page.videoName {
+                    LoopingVideoPlayerView(
+                        videoName: videoName,
+                        isPlaying: isCurrentPage
+                    )
+                    .frame(
+                        width: min(400, geometry.size.width * 0.6),
+                        height: min(200, geometry.size.width * 0.45)
+                    )
+                    .cornerRadius(16)
+                    .clipped()
+                } else if page.id == 0 {
+                    // Welcome page - use controller image
                     Image("controller_diagram")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: min(350, geometry.size.width * 0.5))
+                } else if page.id == 4 {
+                    // X button placeholder - use icon
+                    Image(systemName: "heart.fill")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 100, height: 100)
+                        .foregroundColor(AppTheme.Colors.accent)
+                } else if page.id == 8 {
+                    // Final page - use system icon
+                    Image(systemName: "play.circle.fill")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 100, height: 100)
+                        .foregroundColor(AppTheme.Colors.accent)
+                } else if let imageName = page.imageName {
+                    // Fallback to image if provided
+                    Image(imageName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: min(350, geometry.size.width * 0.5))
                 } else {
-                    // Other pages use system icons
-                    Image(systemName: getSystemImageName(for: page.id))
+                    // Default icon
+                    Image(systemName: "gamecontroller.fill")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 100)
                         .foregroundColor(AppTheme.Colors.accent)
                 }
             }
-            .padding(.bottom,-20)
+            .padding(.bottom, -20)
             .padding(.top, 10)
             
-            // Title
+            // Title only
             Text(page.title)
                 .padding(.bottom, -3)
                 .padding(.top, -3)
@@ -214,27 +246,9 @@ struct OnboardingPageContentView: View {
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
             
-            // Description
-            Text(page.description)
-                .font(.system(size: 16))
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Spacing.xl)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, -25)
-            
             Spacer()
         }
         .frame(maxWidth: .infinity)
-    }
-    
-    private func getSystemImageName(for pageId: Int) -> String {
-        switch pageId {
-        case 0: return "sparkles"
-        case 2: return "square.grid.3x3.fill"
-        case 3: return "play.circle.fill"
-        default: return "gamecontroller.fill"
-        }
     }
 }
 

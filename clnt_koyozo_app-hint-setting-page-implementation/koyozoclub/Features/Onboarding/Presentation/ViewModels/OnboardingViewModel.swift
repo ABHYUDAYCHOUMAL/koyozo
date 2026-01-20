@@ -16,6 +16,7 @@ class OnboardingViewModel: ViewModelProtocol {
     @Published var currentPageIndex: Int = 0
     
     let pages: [OnboardingPage] = [
+        // Page 1: Welcome (keep current first page)
         OnboardingPage(
             id: 0,
             imageName: "onboarding_controller",
@@ -23,22 +24,65 @@ class OnboardingViewModel: ViewModelProtocol {
             description: "Your ultimate gaming companion for iOS games with controller support",
             controllerHint: nil
         ),
+        // Page 2: A button video
         OnboardingPage(
             id: 1,
-            imageName: "onboarding_controller",
-            title: "Connect Your Controller",
-            description: "Pair your favorite gaming controller for the best experience",
-            controllerHint: "Use Y for Pin/unpin"
-        ),
-        OnboardingPage(
-            id: 2,
-            imageName: "onboarding_browse",
-            title: "Browse & Play",
-            description: "Discover thousands of iOS games optimized for controller play",
+            videoName: "A",
+            title: "Press 'A' to Select",
+            description: "Press 'A' to select /start",
             controllerHint: nil
         ),
+        // Page 3: B button video
+        OnboardingPage(
+            id: 2,
+            videoName: "B",
+            title: "Press 'B' to Go Back",
+            description: "Press 'B' to back in between pages",
+            controllerHint: nil
+        ),
+        // Page 4: Y button video
         OnboardingPage(
             id: 3,
+            videoName: "Y",
+            title: "Press 'Y' to Search",
+            description: "Press 'Y' to search",
+            controllerHint: nil
+        ),
+        // Page 5: X button placeholder (icon)
+        OnboardingPage(
+            id: 4,
+            imageName: nil,
+            title: "Press 'X' to Favorite",
+            description: "Press 'X' for keeping a game in favourite",
+            controllerHint: nil
+        ),
+        // Page 6: Joystick video
+        OnboardingPage(
+            id: 5,
+            videoName: "Joystick",
+            title: "Use Joystick to Navigate",
+            description: "Use Joystick to navigate",
+            controllerHint: nil
+        ),
+        // Page 7: Mode button video
+        OnboardingPage(
+            id: 6,
+            videoName: "mode",
+            title: "Switch Between Modes",
+            description: "Press mode to switch in between modes",
+            controllerHint: nil
+        ),
+        // Page 8: Vibration video
+        OnboardingPage(
+            id: 7,
+            videoName: "vibrate",
+            title: "Press and hold to Reset the Controller",
+            description: "Feel the real vibe with vibration",
+            controllerHint: nil
+        ),
+        // Page 9: Final page (keep current last page)
+        OnboardingPage(
+            id: 8,
             imageName: "onboarding_browse",
             title: "Ready to Play!",
             description: "Start your gaming journey with Koyozo now",
