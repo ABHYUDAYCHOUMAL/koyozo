@@ -25,7 +25,7 @@ struct LabeledTextField: View {
                     // Placeholder text - only show when text is empty AND not focused
                     if text.isEmpty && !isTextFieldFocused {
                         Text(placeholder)
-                            .foregroundColor(Color.gray.opacity(0.6))
+                            .foregroundColor(Color.white.opacity(0.55))
                             .font(.body)
                             .allowsHitTesting(false)
                     }
@@ -34,12 +34,12 @@ struct LabeledTextField: View {
                     Group {
                         if isSecure {
                             SecureField("", text: $text)
-                                .foregroundColor(AppTheme.Colors.darkBlue)
+                                .foregroundColor(AppTheme.Colors.text)
                                 .font(.body)
                                 .focused($isTextFieldFocused)
                         } else {
                             TextField("", text: $text)
-                                .foregroundColor(AppTheme.Colors.darkBlue)
+                                .foregroundColor(AppTheme.Colors.text)
                                 .font(.body)
                                 .focused($isTextFieldFocused)
                                 .keyboardType(isEmailField ? .emailAddress : .default)
@@ -56,17 +56,20 @@ struct LabeledTextField: View {
                     }) {
                         Text("Edit")
                             .font(.body)
-                            .foregroundColor(AppTheme.Colors.darkBlue)
+                            .foregroundColor(AppTheme.Colors.text)
                     }
                 }
             }
             .padding(.vertical, Spacing.md)
             .padding(.horizontal, Spacing.sm + Spacing.xs)
-            .background(AppTheme.Colors.white)
+            .background(AppTheme.Colors.inputBackground)
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(isFocused ? Color.white : AppTheme.Colors.darkBlue, lineWidth: isFocused ? 3 : 1)
+                    .stroke(
+                        isFocused ? AppTheme.Colors.inputBorderFocused : AppTheme.Colors.inputBorder,
+                        lineWidth: isFocused ? 2 : 1
+                    )
             )
             .scaleEffect(isFocused ? 1.05 : 1.0)
         }

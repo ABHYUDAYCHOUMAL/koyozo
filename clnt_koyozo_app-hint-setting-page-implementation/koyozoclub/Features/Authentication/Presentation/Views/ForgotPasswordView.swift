@@ -10,23 +10,30 @@ struct ForgotPasswordView: View {
     }
     
     var body: some View {
-        VStack(spacing: Spacing.md) {
-            Text("Reset Password")
-                .font(.largeTitle)
-                .bold()
+        ZStack {
+            AppTheme.Colors.darkBlue
+                .ignoresSafeArea()
             
-            AppTextField(
-                placeholder: "Email",
-                text: $viewModel.email
-            )
-            
-            PrimaryButton(title: "Send Reset Link") {
-                viewModel.resetPassword()
+            VStack(spacing: Spacing.md) {
+                Text("Reset Password")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.Colors.text)
+                
+                AppTextField(
+                    placeholder: "Enter email",
+                    text: $viewModel.email,
+                    isEmailField: true
+                )
+                
+                PrimaryButton(title: "Send Reset Link") {
+                    viewModel.resetPassword()
+                }
+                
+                Spacer()
             }
-            
-            Spacer()
+            .padding()
+            .frame(maxWidth: 420)
         }
-        .padding()
     }
 }
 

@@ -49,23 +49,26 @@ struct SetPasswordView: View {
                                 // Placeholder text - only show when password is empty AND not focused
                                 if viewModel.password.isEmpty && focusedField != .password {
                                     Text("Enter password")
-                                        .foregroundColor(Color.gray.opacity(0.6))
+                                        .foregroundColor(Color.white.opacity(0.55))
                                         .font(.body)
                                         .allowsHitTesting(false)
                                 }
                                 
                                 SecureField("", text: $viewModel.password)
                                     .focused($focusedField, equals: .password)
-                                    .foregroundColor(AppTheme.Colors.darkBlue)
+                                    .foregroundColor(AppTheme.Colors.text)
                                     .font(.body)
                             }
                             .padding(.vertical, Spacing.md)
                             .padding(.horizontal, Spacing.sm + Spacing.xs)
-                            .background(AppTheme.Colors.white)
+                            .background(AppTheme.Colors.inputBackground)
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(AppTheme.Colors.darkBlue, lineWidth: 1)
+                                    .stroke(
+                                        focusedField == .password ? AppTheme.Colors.inputBorderFocused : AppTheme.Colors.inputBorder,
+                                        lineWidth: focusedField == .password ? 2 : 1
+                                    )
                             )
                         }
                         .frame(width: min(400, geometry.size.width * 0.7))
@@ -86,23 +89,26 @@ struct SetPasswordView: View {
                                 // Placeholder text - only show when confirmPassword is empty AND not focused
                                 if viewModel.confirmPassword.isEmpty && focusedField != .confirmPassword {
                                     Text("Enter password again")
-                                        .foregroundColor(Color.gray.opacity(0.6))
+                                        .foregroundColor(Color.white.opacity(0.55))
                                         .font(.body)
                                         .allowsHitTesting(false)
                                 }
                                 
                                 SecureField("", text: $viewModel.confirmPassword)
                                     .focused($focusedField, equals: .confirmPassword)
-                                    .foregroundColor(AppTheme.Colors.darkBlue)
+                                    .foregroundColor(AppTheme.Colors.text)
                                     .font(.body)
                             }
                             .padding(.vertical, Spacing.md)
                             .padding(.horizontal, Spacing.sm + Spacing.xs)
-                            .background(AppTheme.Colors.white)
+                            .background(AppTheme.Colors.inputBackground)
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(AppTheme.Colors.darkBlue, lineWidth: 1)
+                                    .stroke(
+                                        focusedField == .confirmPassword ? AppTheme.Colors.inputBorderFocused : AppTheme.Colors.inputBorder,
+                                        lineWidth: focusedField == .confirmPassword ? 2 : 1
+                                    )
                             )
                         }
                         .frame(width: min(400, geometry.size.width * 0.7))

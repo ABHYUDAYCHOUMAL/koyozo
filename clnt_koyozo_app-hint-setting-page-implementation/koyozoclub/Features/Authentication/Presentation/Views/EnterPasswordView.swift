@@ -46,7 +46,7 @@ struct EnterPasswordView: View {
                             
                             HStack {
                                 Text(email)
-                                    .foregroundColor(AppTheme.Colors.darkBlue)
+                                    .foregroundColor(AppTheme.Colors.text)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.8)
                                     .font(.body)
@@ -58,16 +58,16 @@ struct EnterPasswordView: View {
                                 }) {
                                     Text("Edit")
                                         .font(.body)
-                                        .foregroundColor(AppTheme.Colors.darkBlue)
+                                        .foregroundColor(AppTheme.Colors.text)
                                 }
                             }
                             .padding(.vertical, Spacing.md)
                             .padding(.horizontal, Spacing.sm + Spacing.xs)
-                            .background(AppTheme.Colors.white)
+                            .background(AppTheme.Colors.inputBackground)
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(AppTheme.Colors.darkBlue, lineWidth: 1)
+                                    .stroke(AppTheme.Colors.inputBorder, lineWidth: 1)
                             )
                         }
                         .frame(width: min(400, geometry.size.width * 0.7))

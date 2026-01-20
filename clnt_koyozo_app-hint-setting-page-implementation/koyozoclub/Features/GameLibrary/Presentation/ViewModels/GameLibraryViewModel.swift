@@ -4,7 +4,8 @@ import Foundation
 import SwiftUI
 import Combine
 
-class GameLibraryViewModel: ViewModelProtocol {
+class GameLibraryViewModel: ViewModelProtocol
+{
     var isLoading: Bool = false
     var errorMessage: String?
     
@@ -12,6 +13,17 @@ class GameLibraryViewModel: ViewModelProtocol {
     @Published var favoriteItems: [GameItem] = [] // Favorites list for second row
     @Published var selectedGameIndex: Int = 0
     @Published var selectedFavoriteIndex: Int = 0 // Selection index for favorites row
+    
+    @Published var newTryoutsItems: [GameItem] = []
+    @Published var popularInIndiaItems: [GameItem] = []
+    @Published var playWithFriendsItems: [GameItem] = []
+    @Published var platformsItems: [GameItem] = []
+
+    @Published var selectedNewTryoutsIndex: Int = 0
+    @Published var selectedPopularInIndiaIndex: Int = 0
+    @Published var selectedPlayWithFriendsIndex: Int = 0
+    @Published var selectedPlatformsIndex: Int = 0
+    
     @Published var recentGames: [Game] = [] // For RecentGamesView - empty for now
     
     // All games cache for favorites lookup
@@ -70,50 +82,152 @@ class GameLibraryViewModel: ViewModelProtocol {
             // Step 2: Refresh from API in background
             errorMessage = nil
             
+            // Fetch main games and categories independently
+            // This way, if one fails, others can still succeed
+            
+            // Fetch main games row (no category filter)
+            let games: [Game]?
             do {
-                // Fetch top games for the dashboard (defaults to rating desc, top 10)
-                let games = try await fetchGamesUseCase.executeForDashboard()
-                
-                // Check if data actually changed
-                let gamesChanged = games.map { $0.id } != allGamesCache.map { $0.id }
-                
-                await MainActor.run {
-                    // Only update if data changed
-                    if gamesChanged {
-                        // Cache all games for favorites lookup
-                        allGamesCache = games
-                        
-                        let previousGameIndex = selectedGameIndex
-                        let previousFavoriteIndex = selectedFavoriteIndex
-                        
-                        gameItems = games.map { GameItem.game($0) } + [GameItem.allGames]
-                        
-                        loadFavorites(preserving: previousFavoriteIndex)
-                        
-                        selectedGameIndex = clampedSelectionIndex(previousGameIndex, upperBound: gameItems.count)
-                    }
-                    isLoading = false
-                }
+                games = try await fetchGamesUseCase.executeForDashboard(category: nil)
             } catch {
+                games = nil
                 await MainActor.run {
                     // Only show error if we don't have cached data
                     if allGamesCache.isEmpty {
                         errorMessage = error.localizedDescription
-                        
+                        allGamesCache = []
+                        // Keep "All Games" entry so navigation remains available
+                        gameItems = [GameItem.allGames]
+                        loadFavorites(preserving: selectedFavoriteIndex)
+                        selectedGameIndex = clampedSelectionIndex(selectedGameIndex, upperBound: gameItems.count)
+                    }
+                }
+            }
+            
+            // Update main games first (if fetch succeeded)
+            if let games = games {
+                await MainActor.run {
+                    // Check if data actually changed
+                    let gamesChanged = games.map { $0.id } != allGamesCache.map { $0.id }
+                    
+                    if gamesChanged {
                         let previousGameIndex = selectedGameIndex
                         let previousFavoriteIndex = selectedFavoriteIndex
                         
-                        allGamesCache = []
-                        
-                        // Keep "All Games" entry so navigation remains available
-                        gameItems = [GameItem.allGames]
-                        
+                        // Cache all games for favorites lookup
+                        allGamesCache = games
+                        gameItems = games.map { GameItem.game($0) } + [GameItem.allGames]
                         loadFavorites(preserving: previousFavoriteIndex)
-                        
                         selectedGameIndex = clampedSelectionIndex(previousGameIndex, upperBound: gameItems.count)
                     }
-                    isLoading = false
+                    errorMessage = nil
                 }
+            }
+            
+            // Fetch category-specific games with caching (similar to main games)
+            // Step 1: Load from cache immediately for each category
+            let cachedNewTryouts = try? await fetchGamesUseCase.executeCachedForCategory(category: "New Tryouts")
+            let cachedPopularInIndia = try? await fetchGamesUseCase.executeCachedForCategory(category: "Popular in India Today")
+            let cachedPlayWithFriends = try? await fetchGamesUseCase.executeCachedForCategory(category: "Play with Friends")
+            let cachedPlatforms = try? await fetchGamesUseCase.executeCachedForCategory(category: "Platforms")
+            
+            // Display cached data immediately if available
+            await MainActor.run {
+                if let cached = cachedNewTryouts, !cached.isEmpty {
+                    newTryoutsItems = cached.map { GameItem.game($0) }
+                }
+                if let cached = cachedPopularInIndia, !cached.isEmpty {
+                    popularInIndiaItems = cached.map { GameItem.game($0) }
+                }
+                if let cached = cachedPlayWithFriends, !cached.isEmpty {
+                    playWithFriendsItems = cached.map { GameItem.game($0) }
+                }
+                if let cached = cachedPlatforms, !cached.isEmpty {
+                    platformsItems = cached.map { GameItem.game($0) }
+                }
+            }
+            
+            // Step 2: Refresh from API in background with page size 50
+            let categoryPageSize = 50
+            
+            // Fetch all categories in parallel and update UI incrementally as each completes
+            // Use TaskGroup to handle parallel execution properly
+            await withTaskGroup(of: Void.self) { group in
+                // New Tryouts
+                group.addTask {
+                    if let result = try? await self.fetchGamesUseCase.execute(
+                        pageNumber: 0,
+                        pageSize: categoryPageSize,
+                        sortBy: Constants.API.defaultSortBy,
+                        sortOrder: Constants.API.defaultSortOrder,
+                        search: nil,
+                        category: "New Tryouts"
+                    ) {
+                        await MainActor.run {
+                            let previousIndex = self.selectedNewTryoutsIndex
+                            self.newTryoutsItems = result.games.map { GameItem.game($0) }
+                            self.selectedNewTryoutsIndex = self.clampedSelectionIndex(previousIndex, upperBound: self.newTryoutsItems.count)
+                        }
+                    }
+                }
+                
+                // Popular in India Today
+                group.addTask {
+                    if let result = try? await self.fetchGamesUseCase.execute(
+                        pageNumber: 0,
+                        pageSize: categoryPageSize,
+                        sortBy: Constants.API.defaultSortBy,
+                        sortOrder: Constants.API.defaultSortOrder,
+                        search: nil,
+                        category: "Popular in India Today"
+                    ) {
+                        await MainActor.run {
+                            let previousIndex = self.selectedPopularInIndiaIndex
+                            self.popularInIndiaItems = result.games.map { GameItem.game($0) }
+                            self.selectedPopularInIndiaIndex = self.clampedSelectionIndex(previousIndex, upperBound: self.popularInIndiaItems.count)
+                        }
+                    }
+                }
+                
+                // Play with Friends
+                group.addTask {
+                    if let result = try? await self.fetchGamesUseCase.execute(
+                        pageNumber: 0,
+                        pageSize: categoryPageSize,
+                        sortBy: Constants.API.defaultSortBy,
+                        sortOrder: Constants.API.defaultSortOrder,
+                        search: nil,
+                        category: "Play with Friends"
+                    ) {
+                        await MainActor.run {
+                            let previousIndex = self.selectedPlayWithFriendsIndex
+                            self.playWithFriendsItems = result.games.map { GameItem.game($0) }
+                            self.selectedPlayWithFriendsIndex = self.clampedSelectionIndex(previousIndex, upperBound: self.playWithFriendsItems.count)
+                        }
+                    }
+                }
+                
+                // Platforms
+                group.addTask {
+                    if let result = try? await self.fetchGamesUseCase.execute(
+                        pageNumber: 0,
+                        pageSize: categoryPageSize,
+                        sortBy: Constants.API.defaultSortBy,
+                        sortOrder: Constants.API.defaultSortOrder,
+                        search: nil,
+                        category: "Platforms"
+                    ) {
+                        await MainActor.run {
+                            let previousIndex = self.selectedPlatformsIndex
+                            self.platformsItems = result.games.map { GameItem.game($0) }
+                            self.selectedPlatformsIndex = self.clampedSelectionIndex(previousIndex, upperBound: self.platformsItems.count)
+                        }
+                    }
+                }
+            }
+            
+            await MainActor.run {
+                isLoading = false
             }
         }
     }
@@ -152,23 +266,56 @@ class GameLibraryViewModel: ViewModelProtocol {
     /// Toggle favorite status for the currently selected game
     /// Returns true if game is now favorited, false if removed
     @discardableResult
-    func toggleFavoriteForCurrentGame(inRow rowIndex: Int) -> Bool? {
+    func toggleFavoriteForCurrentGame(inRow rowIndex: Int) -> Bool?
+    {
         let game: Game?
         
-        if rowIndex == 0 {
+        switch rowIndex
+        {
+        case 0:
             // Games row
             guard let selectedItem = selectedItem,
                   case .game(let g) = selectedItem else {
                 return nil
             }
             game = g
-        } else {
+        case 1:
             // Favorites row
             guard let selectedItem = selectedFavoriteItem,
                   case .game(let g) = selectedItem else {
                 return nil
             }
             game = g
+        case 2:
+            // New Tryouts row
+            guard let selectedItem = selectedNewTryoutItem,
+                  case .game(let g) = selectedItem else {
+                return nil
+            }
+            game = g
+        case 3:
+            // Popular in India row
+            guard let selectedItem = selectedPopularInIndiaItem,
+                  case .game(let g) = selectedItem else {
+                return nil
+            }
+            game = g
+        case 4:
+            // Play with Friends row
+            guard let selectedItem = selectedPlayWithFriendsItem,
+                  case .game(let g) = selectedItem else {
+                return nil
+            }
+            game = g
+        case 5:
+            // Platforms row
+            guard let selectedItem = selectedPlatformsItem,
+                  case .game(let g) = selectedItem else {
+                return nil
+            }
+            game = g
+        default:
+            return nil
         }
         
         guard let game = game else { return nil }
@@ -216,6 +363,36 @@ class GameLibraryViewModel: ViewModelProtocol {
         return favoriteItems[selectedFavoriteIndex]
     }
     
+    //added from here
+    var selectedNewTryoutItem: GameItem? {
+        guard selectedNewTryoutsIndex >= 0 && selectedNewTryoutsIndex < newTryoutsItems.count else {
+            return nil
+        }
+        return newTryoutsItems[selectedNewTryoutsIndex]
+    }
+
+    var selectedPopularInIndiaItem: GameItem? {
+        guard selectedPopularInIndiaIndex >= 0 && selectedPopularInIndiaIndex < popularInIndiaItems.count else {
+            return nil
+        }
+        return popularInIndiaItems[selectedPopularInIndiaIndex]
+    }
+
+    var selectedPlayWithFriendsItem: GameItem? {
+        guard selectedPlayWithFriendsIndex >= 0 && selectedPlayWithFriendsIndex < playWithFriendsItems.count else {
+            return nil
+        }
+        return playWithFriendsItems[selectedPlayWithFriendsIndex]
+    }
+
+    var selectedPlatformsItem: GameItem? {
+        guard selectedPlatformsIndex >= 0 && selectedPlatformsIndex < platformsItems.count else {
+            return nil
+        }
+        return platformsItems[selectedPlatformsIndex]
+    }
+    // to here for new category
+    
     func handleAllGamesTap() {
         // This will be handled by the view to navigate
         // Just select it for visual feedback
@@ -245,6 +422,28 @@ class GameLibraryViewModel: ViewModelProtocol {
             self.isLaunching = false
         }
     }
+    
+
+    func selectNewTryout(at index: Int) {
+        guard index >= 0 && index < newTryoutsItems.count else { return }
+        selectedNewTryoutsIndex = index
+    }
+
+    func selectPopularInIndia(at index: Int) {
+        guard index >= 0 && index < popularInIndiaItems.count else { return }
+        selectedPopularInIndiaIndex = index
+    }
+
+    func selectPlayWithFriends(at index: Int) {
+        guard index >= 0 && index < playWithFriendsItems.count else { return }
+        selectedPlayWithFriendsIndex = index
+    }
+
+    func selectPlatforms(at index: Int) {
+        guard index >= 0 && index < platformsItems.count else { return }
+        selectedPlatformsIndex = index
+    }
+
     
     private func clampedSelectionIndex(_ index: Int, upperBound: Int) -> Int {
         guard upperBound > 0 else { return 0 }

@@ -5,14 +5,20 @@ import SwiftUI
 struct AppTheme {
     // MARK: - Colors
     struct Colors {
-        static let primary = Color(hex: "0066FF") // Blue for primary buttons
+        static let primary = Color(hex: "E0552E") // Orange for primary buttons
         static let secondary = Color(hex: "6C757D") // Gray for secondary
         static let accent = Color(hex: "FF6600") // Orange - secondary brand color
-        static let background = Color(hex: "000637")
+        static let background = Color(hex: "1F1F1F")
         static let text = Color.white
-        static let darkBlue = Color(hex: "000637")
+        static let darkBlue = Color(hex: "1A1A1A")
         static let white = Color.white
-        static let linkBlue = Color(hex: "000637") // For links and actionable text
+        static let linkBlue = Color(hex: "E0552E") // For links and actionable text
+        
+        // Surfaces / inputs (auth theme)
+        static let surface = Color(hex: "1F1F1F")
+        static let inputBackground = Color(hex: "1F1F1F")
+        static let inputBorder = Color.white.opacity(0.35)
+        static let inputBorderFocused = primary
     }
     
     // MARK: - Typography

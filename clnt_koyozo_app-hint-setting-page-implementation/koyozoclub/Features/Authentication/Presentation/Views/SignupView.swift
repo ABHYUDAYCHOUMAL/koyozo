@@ -52,11 +52,11 @@ struct SignupView: View {
                                 .padding(.vertical, Spacing.md)
                                 .padding(.horizontal, Spacing.sm + Spacing.xs)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(AppTheme.Colors.darkBlue)
+                                .background(AppTheme.Colors.inputBackground)
                                 .cornerRadius(8)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
-                                        .stroke(AppTheme.Colors.white, lineWidth: 1)
+                                        .stroke(AppTheme.Colors.inputBorder, lineWidth: 1)
                                 )
                         }
                         .frame(width: min(400, geometry.size.width * 0.7))

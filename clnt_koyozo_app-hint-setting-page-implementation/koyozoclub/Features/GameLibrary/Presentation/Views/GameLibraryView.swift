@@ -26,7 +26,7 @@ struct GameLibraryView: View {
     @State private var verticalScrollProxy: ScrollViewProxy?
     @State private var verticalScrollOffsets: [String: CGFloat] = [:]
     @State private var isTopBarFocused: Bool = false
-    @State private var topBarSelectedIndex: Int = 0 // 0 = search, 1 = settings
+    @State private var topBarSelectedIndex: Int = 0 // 0 = search, 1 = controller, 2 = settings, 3 = question mark
     
     private let controllerManager = ControllerManager.shared
     
@@ -85,7 +85,7 @@ struct GameLibraryView: View {
                                     Circle()
                                         .fill(Color.white.opacity(0.2))
                                         .frame(width: 32, height: 32)
-                                    Image(systemName: "gamecontroller.fill")
+                                    Image(systemName: "gearshape")
                                         .font(.system(size: 18, weight: .semibold))
                                         .foregroundColor(AppTheme.Colors.text)
                                 }
@@ -113,7 +113,7 @@ struct GameLibraryView: View {
                                     Circle()
                                         .fill(Color.white.opacity(0.2))
                                         .frame(width: 32, height: 32)
-                                    Image(systemName: "gearshape")
+                                    Image(systemName: "gamecontroller.fill")
                                         .font(.system(size: 18, weight: .semibold))
                                         .foregroundColor(AppTheme.Colors.text)
                                 }
@@ -131,6 +131,34 @@ struct GameLibraryView: View {
                                 )
                                 .scaleEffect(isTopBarFocused && topBarSelectedIndex == 2 ? 1.1 : 1.0)
                                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isTopBarFocused && topBarSelectedIndex == 2)
+                            }
+                            
+                            // Question mark icon (Help/Onboarding)
+                            Button(action: {
+                                coordinator.navigate(to: .onboarding)
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.white.opacity(0.2))
+                                        .frame(width: 32, height: 32)
+                                    Image(systemName: "questionmark.circle.fill")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(AppTheme.Colors.text)
+                                }
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            isTopBarFocused && topBarSelectedIndex == 3 ? AppTheme.Colors.accent : Color.clear,
+                                            lineWidth: isTopBarFocused && topBarSelectedIndex == 3 ? 1.5 : 0
+                                        )
+                                        .frame(width: 36, height: 36)
+                                        .shadow(
+                                            color: isTopBarFocused && topBarSelectedIndex == 3 ? AppTheme.Colors.accent.opacity(0.8) : Color.clear,
+                                            radius: isTopBarFocused && topBarSelectedIndex == 3 ? 8 : 0
+                                        )
+                                )
+                                .scaleEffect(isTopBarFocused && topBarSelectedIndex == 3 ? 1.1 : 1.0)
+                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isTopBarFocused && topBarSelectedIndex == 3)
                             }
                             
                             // App icon
@@ -280,6 +308,266 @@ struct GameLibraryView: View {
                                             )
                                     }
                                 )
+                                
+                                // Divider between rows
+                                Rectangle()
+                                    .fill(AppTheme.Colors.text.opacity(0.2))
+                                    .frame(height:1)
+                                    .padding(.horizontal, Spacing.xl + Spacing.xl)
+                                    .padding(.top, Spacing.xl)
+                                    .padding(.bottom, Spacing.sm)
+
+                                // Third Row - New Tryouts
+                                VStack(alignment: .leading, spacing: 0) {
+                                    SectionTitleView(
+                                        title: "New Tryouts",
+                                        isSelected: selectedRowIndex == 2
+                                    )
+                                    .padding(.leading, Spacing.xl + Spacing.xl)
+                                    
+                                    GameScrollView(
+                                        gameItems: viewModel.newTryoutsItems,
+                                        selectedIndex: selectedRowIndex == 2 ? viewModel.selectedNewTryoutsIndex : -1,
+                                        geometry: geometry,
+                                        onGameSelected: { index in
+                                            withAnimation(.easeInOut(duration: 0.3)) {
+                                                selectedRowIndex = 2
+                                                viewModel.selectNewTryout(at: index)
+                                                verticalScrollProxy?.scrollTo("row-2", anchor: .center)
+                                            }
+                                        },
+                                        onAllGamesTapped: {
+                                            coordinator.navigate(to: .allGames(showSearch: false))
+                                        },
+                                        onGameLaunched: {
+                                            if let item = viewModel.selectedNewTryoutItem,
+                                               case .game(let game) = item {
+                                                viewModel.launchGame(game)
+                                            }
+                                        },
+                                        onScrollOffsetChanged: { offsets in
+                                            if selectedRowIndex == 2 {
+                                                updateSelectedNewTryoutFromScroll(offsets: offsets, geometry: geometry)
+                                            }
+                                        },
+                                        onScrollEnded: { proxy, offsets in
+                                            if selectedRowIndex == 2 {
+                                                snapToClosestNewTryout(proxy: proxy, offsets: offsets, geometry: geometry)
+                                            }
+                                        },
+                                        onProxyReady: { proxy in
+                                            rowScrollProxies[2] = proxy
+                                        }
+                                    )
+                                    .frame(height: 170)
+                                    .offset(y: -Spacing.sm)
+                                }
+                                .contentShape(Rectangle())
+                                .id("row-2")
+                                .background(
+                                    GeometryReader { geo in
+                                        Color.clear
+                                            .preference(
+                                                key: VerticalScrollOffsetPreferenceKey.self,
+                                                value: ["row-2": geo.frame(in: .named("verticalScroll")).minY]
+                                            )
+                                    }
+                                )
+
+                                // Divider between rows
+                                Rectangle()
+                                    .fill(AppTheme.Colors.text.opacity(0.2))
+                                    .frame(height:1)
+                                    .padding(.horizontal, Spacing.xl + Spacing.xl)
+                                    .padding(.top, Spacing.xl)
+                                    .padding(.bottom, Spacing.sm)
+
+                                // Fourth Row - Popular in India Today
+                                VStack(alignment: .leading, spacing: 0) {
+                                    SectionTitleView(
+                                        title: "Popular in India Today",
+                                        isSelected: selectedRowIndex == 3
+                                    )
+                                    .padding(.leading, Spacing.xl + Spacing.xl)
+                                    
+                                    GameScrollView(
+                                        gameItems: viewModel.popularInIndiaItems,
+                                        selectedIndex: selectedRowIndex == 3 ? viewModel.selectedPopularInIndiaIndex : -1,
+                                        geometry: geometry,
+                                        onGameSelected: { index in
+                                            withAnimation(.easeInOut(duration: 0.3)) {
+                                                selectedRowIndex = 3
+                                                viewModel.selectPopularInIndia(at: index)
+                                                verticalScrollProxy?.scrollTo("row-3", anchor: .center)
+                                            }
+                                        },
+                                        onAllGamesTapped: {
+                                            coordinator.navigate(to: .allGames(showSearch: false))
+                                        },
+                                        onGameLaunched: {
+                                            if let item = viewModel.selectedPopularInIndiaItem,
+                                               case .game(let game) = item {
+                                                viewModel.launchGame(game)
+                                            }
+                                        },
+                                        onScrollOffsetChanged: { offsets in
+                                            if selectedRowIndex == 3 {
+                                                updateSelectedPopularInIndiaFromScroll(offsets: offsets, geometry: geometry)
+                                            }
+                                        },
+                                        onScrollEnded: { proxy, offsets in
+                                            if selectedRowIndex == 3 {
+                                                snapToClosestPopularInIndia(proxy: proxy, offsets: offsets, geometry: geometry)
+                                            }
+                                        },
+                                        onProxyReady: { proxy in
+                                            rowScrollProxies[3] = proxy
+                                        }
+                                    )
+                                    .frame(height: 170)
+                                    .offset(y: -Spacing.sm)
+                                }
+                                .contentShape(Rectangle())
+                                .id("row-3")
+                                .background(
+                                    GeometryReader { geo in
+                                        Color.clear
+                                            .preference(
+                                                key: VerticalScrollOffsetPreferenceKey.self,
+                                                value: ["row-3": geo.frame(in: .named("verticalScroll")).minY]
+                                            )
+                                    }
+                                )
+
+                                // Divider between rows
+                                Rectangle()
+                                    .fill(AppTheme.Colors.text.opacity(0.2))
+                                    .frame(height:1)
+                                    .padding(.horizontal, Spacing.xl + Spacing.xl)
+                                    .padding(.top, Spacing.xl)
+                                    .padding(.bottom, Spacing.sm)
+
+                                // Fifth Row - Play with Friends
+                                VStack(alignment: .leading, spacing: 0) {
+                                    SectionTitleView(
+                                        title: "Play with Friends",
+                                        isSelected: selectedRowIndex == 4
+                                    )
+                                    .padding(.leading, Spacing.xl + Spacing.xl)
+                                    
+                                    GameScrollView(
+                                        gameItems: viewModel.playWithFriendsItems,
+                                        selectedIndex: selectedRowIndex == 4 ? viewModel.selectedPlayWithFriendsIndex : -1,
+                                        geometry: geometry,
+                                        onGameSelected: { index in
+                                            withAnimation(.easeInOut(duration: 0.3)) {
+                                                selectedRowIndex = 4
+                                                viewModel.selectPlayWithFriends(at: index)
+                                                verticalScrollProxy?.scrollTo("row-4", anchor: .center)
+                                            }
+                                        },
+                                        onAllGamesTapped: {
+                                            coordinator.navigate(to: .allGames(showSearch: false))
+                                        },
+                                        onGameLaunched: {
+                                            if let item = viewModel.selectedPlayWithFriendsItem,
+                                               case .game(let game) = item {
+                                                viewModel.launchGame(game)
+                                            }
+                                        },
+                                        onScrollOffsetChanged: { offsets in
+                                            if selectedRowIndex == 4 {
+                                                updateSelectedPlayWithFriendsFromScroll(offsets: offsets, geometry: geometry)
+                                            }
+                                        },
+                                        onScrollEnded: { proxy, offsets in
+                                            if selectedRowIndex == 4 {
+                                                snapToClosestPlayWithFriends(proxy: proxy, offsets: offsets, geometry: geometry)
+                                            }
+                                        },
+                                        onProxyReady: { proxy in
+                                            rowScrollProxies[4] = proxy
+                                        }
+                                    )
+                                    .frame(height: 170)
+                                    .offset(y: -Spacing.sm)
+                                }
+                                .contentShape(Rectangle())
+                                .id("row-4")
+                                .background(
+                                    GeometryReader { geo in
+                                        Color.clear
+                                            .preference(
+                                                key: VerticalScrollOffsetPreferenceKey.self,
+                                                value: ["row-4": geo.frame(in: .named("verticalScroll")).minY]
+                                            )
+                                    }
+                                )
+
+                                // Divider between rows
+                                Rectangle()
+                                    .fill(AppTheme.Colors.text.opacity(0.2))
+                                    .frame(height:1)
+                                    .padding(.horizontal, Spacing.xl + Spacing.xl)
+                                    .padding(.top, Spacing.xl)
+                                    .padding(.bottom, Spacing.sm)
+
+                                // Sixth Row - Platforms
+                                VStack(alignment: .leading, spacing: 0) {
+                                    SectionTitleView(
+                                        title: "Platforms",
+                                        isSelected: selectedRowIndex == 5
+                                    )
+                                    .padding(.leading, Spacing.xl + Spacing.xl)
+                                    
+                                    GameScrollView(
+                                        gameItems: viewModel.platformsItems,
+                                        selectedIndex: selectedRowIndex == 5 ? viewModel.selectedPlatformsIndex : -1,
+                                        geometry: geometry,
+                                        onGameSelected: { index in
+                                            withAnimation(.easeInOut(duration: 0.3)) {
+                                                selectedRowIndex = 5
+                                                viewModel.selectPlatforms(at: index)
+                                                verticalScrollProxy?.scrollTo("row-5", anchor: .center)
+                                            }
+                                        },
+                                        onAllGamesTapped: {
+                                            coordinator.navigate(to: .allGames(showSearch: false))
+                                        },
+                                        onGameLaunched: {
+                                            if let item = viewModel.selectedPlatformsItem,
+                                               case .game(let game) = item {
+                                                viewModel.launchGame(game)
+                                            }
+                                        },
+                                        onScrollOffsetChanged: { offsets in
+                                            if selectedRowIndex == 5 {
+                                                updateSelectedPlatformsFromScroll(offsets: offsets, geometry: geometry)
+                                            }
+                                        },
+                                        onScrollEnded: { proxy, offsets in
+                                            if selectedRowIndex == 5 {
+                                                snapToClosestPlatforms(proxy: proxy, offsets: offsets, geometry: geometry)
+                                            }
+                                        },
+                                        onProxyReady: { proxy in
+                                            rowScrollProxies[5] = proxy
+                                        }
+                                    )
+                                    .frame(height: 170)
+                                    .offset(y: -Spacing.sm)
+                                }
+                                .contentShape(Rectangle())
+                                .id("row-5")
+                                .background(
+                                    GeometryReader { geo in
+                                        Color.clear
+                                            .preference(
+                                                key: VerticalScrollOffsetPreferenceKey.self,
+                                                value: ["row-5": geo.frame(in: .named("verticalScroll")).minY]
+                                            )
+                                    }
+                                )
                             }
                             .padding(.top, Spacing.sm)
                             .padding(.bottom, 100) // Add bottom padding to show peek of second row (half visible)
@@ -313,13 +601,11 @@ struct GameLibraryView: View {
                     Spacer()
                 ControllerHintsView(
                     onConfirmTap: {
-                        if let selectedItem = getSelectedItem(),
-                           selectedItem.isAllGames {
+                        guard let selectedItem = getSelectedItem() else { return }
+                        switch selectedItem {
+                        case .allGames:
                             coordinator.navigate(to: .allGames(showSearch: false))
-                        } else if selectedRowIndex == 0 {
-                            viewModel.launchSelectedGame()
-                        } else if let favoriteItem = viewModel.selectedFavoriteItem,
-                                  case .game(let game) = favoriteItem {
+                        case .game(let game):
                             viewModel.launchGame(game)
                         }
                     },
@@ -450,6 +736,107 @@ struct GameLibraryView: View {
         }
     }
     
+    //new methods
+    private func updateSelectedNewTryoutFromScroll(offsets: [Int: CGFloat], geometry: GeometryProxy) {
+        let focusPosition: CGFloat = 100
+        let threshold: CGFloat = 80
+        
+        var closestIndex: Int?
+        var minDistance: CGFloat = .infinity
+        
+        for (index, offset) in offsets {
+            let distance = abs(offset - focusPosition)
+            if distance < minDistance {
+                minDistance = distance
+                closestIndex = index
+            }
+        }
+        
+        if let index = closestIndex,
+           minDistance < threshold,
+           index != viewModel.selectedNewTryoutsIndex,
+           index < viewModel.newTryoutsItems.count {
+            DispatchQueue.main.async {
+                viewModel.selectNewTryout(at: index)
+            }
+        }
+    }
+
+    private func updateSelectedPopularInIndiaFromScroll(offsets: [Int: CGFloat], geometry: GeometryProxy) {
+        let focusPosition: CGFloat = 100
+        let threshold: CGFloat = 80
+        
+        var closestIndex: Int?
+        var minDistance: CGFloat = .infinity
+        
+        for (index, offset) in offsets {
+            let distance = abs(offset - focusPosition)
+            if distance < minDistance {
+                minDistance = distance
+                closestIndex = index
+            }
+        }
+        
+        if let index = closestIndex,
+           minDistance < threshold,
+           index != viewModel.selectedPopularInIndiaIndex,
+           index < viewModel.popularInIndiaItems.count {
+            DispatchQueue.main.async {
+                viewModel.selectPopularInIndia(at: index)
+            }
+        }
+    }
+
+    private func updateSelectedPlayWithFriendsFromScroll(offsets: [Int: CGFloat], geometry: GeometryProxy) {
+        let focusPosition: CGFloat = 100
+        let threshold: CGFloat = 80
+        
+        var closestIndex: Int?
+        var minDistance: CGFloat = .infinity
+        
+        for (index, offset) in offsets {
+            let distance = abs(offset - focusPosition)
+            if distance < minDistance {
+                minDistance = distance
+                closestIndex = index
+            }
+        }
+        
+        if let index = closestIndex,
+           minDistance < threshold,
+           index != viewModel.selectedPlayWithFriendsIndex,
+           index < viewModel.playWithFriendsItems.count {
+            DispatchQueue.main.async {
+                viewModel.selectPlayWithFriends(at: index)
+            }
+        }
+    }
+
+    private func updateSelectedPlatformsFromScroll(offsets: [Int: CGFloat], geometry: GeometryProxy) {
+        let focusPosition: CGFloat = 100
+        let threshold: CGFloat = 80
+        
+        var closestIndex: Int?
+        var minDistance: CGFloat = .infinity
+        
+        for (index, offset) in offsets {
+            let distance = abs(offset - focusPosition)
+            if distance < minDistance {
+                minDistance = distance
+                closestIndex = index
+            }
+        }
+        
+        if let index = closestIndex,
+           minDistance < threshold,
+           index != viewModel.selectedPlatformsIndex,
+           index < viewModel.platformsItems.count {
+            DispatchQueue.main.async {
+                viewModel.selectPlatforms(at: index)
+            }
+        }
+    }
+    
     private func snapToClosestFavorite(proxy: ScrollViewProxy, offsets: [Int: CGFloat], geometry: GeometryProxy) {
         let focusPosition: CGFloat = 100
         var closestIndex: Int?
@@ -469,6 +856,99 @@ struct GameLibraryView: View {
                 let anchorX = focusX / geometry.size.width
                 proxy.scrollTo(index, anchor: UnitPoint(x: anchorX, y: 0.5))
                 viewModel.selectFavorite(at: index)
+            }
+        }
+    }
+    
+    //added from here
+    private func snapToClosestNewTryout(proxy: ScrollViewProxy, offsets: [Int: CGFloat], geometry: GeometryProxy) {
+        let focusPosition: CGFloat = 100
+        var closestIndex: Int?
+        var minDistance: CGFloat = .infinity
+        
+        for (index, offset) in offsets {
+            let distance = abs(offset - focusPosition)
+            if distance < minDistance {
+                minDistance = distance
+                closestIndex = index
+            }
+        }
+        
+        if let index = closestIndex, index < viewModel.newTryoutsItems.count {
+            withAnimation(.easeOut(duration: 0.3)) {
+                let focusX: CGFloat = 100
+                let anchorX = focusX / geometry.size.width
+                proxy.scrollTo(index, anchor: UnitPoint(x: anchorX, y: 0.5))
+                viewModel.selectNewTryout(at: index)
+            }
+        }
+    }
+
+    private func snapToClosestPopularInIndia(proxy: ScrollViewProxy, offsets: [Int: CGFloat], geometry: GeometryProxy) {
+        let focusPosition: CGFloat = 100
+        var closestIndex: Int?
+        var minDistance: CGFloat = .infinity
+        
+        for (index, offset) in offsets {
+            let distance = abs(offset - focusPosition)
+            if distance < minDistance {
+                minDistance = distance
+                closestIndex = index
+            }
+        }
+        
+        if let index = closestIndex, index < viewModel.popularInIndiaItems.count {
+            withAnimation(.easeOut(duration: 0.3)) {
+                let focusX: CGFloat = 100
+                let anchorX = focusX / geometry.size.width
+                proxy.scrollTo(index, anchor: UnitPoint(x: anchorX, y: 0.5))
+                viewModel.selectPopularInIndia(at: index)
+            }
+        }
+    }
+
+    private func snapToClosestPlayWithFriends(proxy: ScrollViewProxy, offsets: [Int: CGFloat], geometry: GeometryProxy) {
+        let focusPosition: CGFloat = 100
+        var closestIndex: Int?
+        var minDistance: CGFloat = .infinity
+        
+        for (index, offset) in offsets {
+            let distance = abs(offset - focusPosition)
+            if distance < minDistance {
+                minDistance = distance
+                closestIndex = index
+            }
+        }
+        
+        if let index = closestIndex, index < viewModel.playWithFriendsItems.count {
+            withAnimation(.easeOut(duration: 0.3)) {
+                let focusX: CGFloat = 100
+                let anchorX = focusX / geometry.size.width
+                proxy.scrollTo(index, anchor: UnitPoint(x: anchorX, y: 0.5))
+                viewModel.selectPlayWithFriends(at: index)
+            }
+        }
+    }
+
+    private func snapToClosestPlatforms(proxy: ScrollViewProxy, offsets: [Int: CGFloat], geometry: GeometryProxy) {
+        let focusPosition: CGFloat = 100
+        var closestIndex: Int?
+        var minDistance: CGFloat = .infinity
+        
+        for (index, offset) in offsets {
+            let distance = abs(offset - focusPosition)
+            if distance < minDistance {
+                minDistance = distance
+                closestIndex = index
+            }
+        }
+        
+        if let index = closestIndex, index < viewModel.platformsItems.count {
+            withAnimation(.easeOut(duration: 0.3)) {
+                let focusX: CGFloat = 100
+                let anchorX = focusX / geometry.size.width
+                proxy.scrollTo(index, anchor: UnitPoint(x: anchorX, y: 0.5))
+                viewModel.selectPlatforms(at: index)
             }
         }
     }
@@ -499,7 +979,8 @@ struct GameLibraryView: View {
         
         // Snap to the closest row
         if let rowId = closestRow {
-            let targetRowIndex = rowId == "row-0" ? 0 : 1
+            // row ids are "row-0" ... "row-5"
+            let targetRowIndex = Int(rowId.split(separator: "-").last ?? "") ?? 0
             
             withAnimation(.easeOut(duration: 0.3)) {
                 if targetRowIndex != selectedRowIndex {
@@ -511,10 +992,21 @@ struct GameLibraryView: View {
     }
     
     private func getSelectedItem() -> GameItem? {
-        if selectedRowIndex == 0 {
+        switch selectedRowIndex {
+        case 0:
             return viewModel.selectedItem
-        } else {
+        case 1:
             return viewModel.selectedFavoriteItem
+        case 2:
+            return viewModel.selectedNewTryoutItem
+        case 3:
+            return viewModel.selectedPopularInIndiaItem
+        case 4:
+            return viewModel.selectedPlayWithFriendsItem
+        case 5:
+            return viewModel.selectedPlatformsItem
+        default:
+            return nil
         }
     }
     
@@ -557,6 +1049,9 @@ struct GameLibraryView: View {
                     } else if topBarSelectedIndex == 2 {
                         // Settings icon
                         coordinator.navigate(to: .settings)
+                    } else if topBarSelectedIndex == 3 {
+                        // Question mark icon (Help/Onboarding)
+                        coordinator.navigate(to: .onboarding)
                     }
                     // Exit top bar mode after action
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -619,7 +1114,10 @@ struct GameLibraryView: View {
                       let rowProxy = rowScrollProxies[selectedRowIndex],
                       screenWidth > 0 else { return }
                 
-                if selectedRowIndex == 0 {
+                
+                // added here new
+                switch selectedRowIndex {
+                case 0:
                     let currentIndex = viewModel.selectedGameIndex
                     let previousIndex = max(0, currentIndex - 1)
                     
@@ -630,7 +1128,7 @@ struct GameLibraryView: View {
                             rowProxy.scrollTo(previousIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
                         }
                     }
-                } else {
+                case 1:
                     let currentIndex = viewModel.selectedFavoriteIndex
                     let previousIndex = max(0, currentIndex - 1)
                     
@@ -641,6 +1139,52 @@ struct GameLibraryView: View {
                             rowProxy.scrollTo(previousIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
                         }
                     }
+                case 2:
+                    let currentIndex = viewModel.selectedNewTryoutsIndex
+                    let previousIndex = max(0, currentIndex - 1)
+                    
+                    if previousIndex != currentIndex {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.selectNewTryout(at: previousIndex)
+                            let anchorX = focusX / screenWidth
+                            rowProxy.scrollTo(previousIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
+                        }
+                    }
+                case 3:
+                    let currentIndex = viewModel.selectedPopularInIndiaIndex
+                    let previousIndex = max(0, currentIndex - 1)
+                    
+                    if previousIndex != currentIndex {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.selectPopularInIndia(at: previousIndex)
+                            let anchorX = focusX / screenWidth
+                            rowProxy.scrollTo(previousIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
+                        }
+                    }
+                case 4:
+                    let currentIndex = viewModel.selectedPlayWithFriendsIndex
+                    let previousIndex = max(0, currentIndex - 1)
+                    
+                    if previousIndex != currentIndex {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.selectPlayWithFriends(at: previousIndex)
+                            let anchorX = focusX / screenWidth
+                            rowProxy.scrollTo(previousIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
+                        }
+                    }
+                case 5:
+                    let currentIndex = viewModel.selectedPlatformsIndex
+                    let previousIndex = max(0, currentIndex - 1)
+                    
+                    if previousIndex != currentIndex {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.selectPlatforms(at: previousIndex)
+                            let anchorX = focusX / screenWidth
+                            rowProxy.scrollTo(previousIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
+                        }
+                    }
+                default:
+                    break
                 }
             }
             .store(in: &cancellables)
@@ -652,7 +1196,7 @@ struct GameLibraryView: View {
                 
                 // Handle top bar navigation
                 if isTopBarFocused {
-                    let nextIndex = min(2, topBarSelectedIndex + 1) // 3 icons: search (0), controller (1), settings (2)
+                    let nextIndex = min(3, topBarSelectedIndex + 1) // 4 icons: search (0), controller (1), settings (2), question mark (3)
                     if nextIndex != topBarSelectedIndex {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             topBarSelectedIndex = nextIndex
@@ -666,7 +1210,9 @@ struct GameLibraryView: View {
                       let rowProxy = rowScrollProxies[selectedRowIndex],
                       screenWidth > 0 else { return }
                 
-                if selectedRowIndex == 0 {
+                // added here
+                switch selectedRowIndex {
+                case 0:
                     let currentIndex = viewModel.selectedGameIndex
                     let nextIndex = min(viewModel.gameItems.count - 1, currentIndex + 1)
                     
@@ -677,7 +1223,7 @@ struct GameLibraryView: View {
                             rowProxy.scrollTo(nextIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
                         }
                     }
-                } else {
+                case 1:
                     let currentIndex = viewModel.selectedFavoriteIndex
                     let nextIndex = min(viewModel.favoriteItems.count - 1, currentIndex + 1)
                     
@@ -688,6 +1234,52 @@ struct GameLibraryView: View {
                             rowProxy.scrollTo(nextIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
                         }
                     }
+                case 2:
+                    let currentIndex = viewModel.selectedNewTryoutsIndex
+                    let nextIndex = min(viewModel.newTryoutsItems.count - 1, currentIndex + 1)
+                    
+                    if nextIndex != currentIndex {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.selectNewTryout(at: nextIndex)
+                            let anchorX = focusX / screenWidth
+                            rowProxy.scrollTo(nextIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
+                        }
+                    }
+                case 3:
+                    let currentIndex = viewModel.selectedPopularInIndiaIndex
+                    let nextIndex = min(viewModel.popularInIndiaItems.count - 1, currentIndex + 1)
+                    
+                    if nextIndex != currentIndex {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.selectPopularInIndia(at: nextIndex)
+                            let anchorX = focusX / screenWidth
+                            rowProxy.scrollTo(nextIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
+                        }
+                    }
+                case 4:
+                    let currentIndex = viewModel.selectedPlayWithFriendsIndex
+                    let nextIndex = min(viewModel.playWithFriendsItems.count - 1, currentIndex + 1)
+                    
+                    if nextIndex != currentIndex {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.selectPlayWithFriends(at: nextIndex)
+                            let anchorX = focusX / screenWidth
+                            rowProxy.scrollTo(nextIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
+                        }
+                    }
+                case 5:
+                    let currentIndex = viewModel.selectedPlatformsIndex
+                    let nextIndex = min(viewModel.platformsItems.count - 1, currentIndex + 1)
+                    
+                    if nextIndex != currentIndex {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.selectPlatforms(at: nextIndex)
+                            let anchorX = focusX / screenWidth
+                            rowProxy.scrollTo(nextIndex, anchor: UnitPoint(x: anchorX, y: 0.5))
+                        }
+                    }
+                default:
+                    break
                 }
             }
             .store(in: &cancellables)
@@ -727,7 +1319,23 @@ struct GameLibraryView: View {
                         if let rowProxy = rowScrollProxies[previousRow],
                            screenWidth > 0 {
                             let anchorX = focusX / screenWidth
-                            let indexToScroll = previousRow == 0 ? viewModel.selectedGameIndex : viewModel.selectedFavoriteIndex
+                            let indexToScroll: Int
+                            switch previousRow {
+                            case 0:
+                                indexToScroll = viewModel.selectedGameIndex
+                            case 1:
+                                indexToScroll = viewModel.selectedFavoriteIndex
+                            case 2:
+                                indexToScroll = viewModel.selectedNewTryoutsIndex
+                            case 3:
+                                indexToScroll = viewModel.selectedPopularInIndiaIndex
+                            case 4:
+                                indexToScroll = viewModel.selectedPlayWithFriendsIndex
+                            case 5:
+                                indexToScroll = viewModel.selectedPlatformsIndex
+                            default:
+                                indexToScroll = 0
+                            }
                             rowProxy.scrollTo(indexToScroll, anchor: UnitPoint(x: anchorX, y: 0.5))
                             scrollProxy = rowProxy
                         }
@@ -755,17 +1363,42 @@ struct GameLibraryView: View {
                 // Cancel auto-snap timer when using controller
                 verticalSnapTimer?.invalidate()
                 
-                let nextRow = min(1, selectedRowIndex + 1) // Only 2 rows (0 and 1)
+                let nextRow = min(5, selectedRowIndex + 1) // Support 6 rows (0-5)
                 if nextRow != selectedRowIndex {
                     withAnimation(.easeInOut(duration: 0.3)) {
                         selectedRowIndex = nextRow
                         // Scroll vertically to show the row
                         verticalScrollProxy?.scrollTo("row-\(nextRow)", anchor: .center)
                         // Keep the same game index when switching rows
+//                        if let rowProxy = rowScrollProxies[nextRow],
+//                           screenWidth > 0 {
+//                            let anchorX = focusX / screenWidth
+//                            let indexToScroll = nextRow == 0 ? viewModel.selectedGameIndex : viewModel.selectedFavoriteIndex
+//                            rowProxy.scrollTo(indexToScroll, anchor: UnitPoint(x: anchorX, y: 0.5))
+//                            scrollProxy = rowProxy
+//                        }
+                        
+                        // added here
                         if let rowProxy = rowScrollProxies[nextRow],
                            screenWidth > 0 {
                             let anchorX = focusX / screenWidth
-                            let indexToScroll = nextRow == 0 ? viewModel.selectedGameIndex : viewModel.selectedFavoriteIndex
+                            let indexToScroll: Int
+                            switch nextRow {
+                            case 0:
+                                indexToScroll = viewModel.selectedGameIndex
+                            case 1:
+                                indexToScroll = viewModel.selectedFavoriteIndex
+                            case 2:
+                                indexToScroll = viewModel.selectedNewTryoutsIndex
+                            case 3:
+                                indexToScroll = viewModel.selectedPopularInIndiaIndex
+                            case 4:
+                                indexToScroll = viewModel.selectedPlayWithFriendsIndex
+                            case 5:
+                                indexToScroll = viewModel.selectedPlatformsIndex
+                            default:
+                                indexToScroll = 0
+                            }
                             rowProxy.scrollTo(indexToScroll, anchor: UnitPoint(x: anchorX, y: 0.5))
                             scrollProxy = rowProxy
                         }

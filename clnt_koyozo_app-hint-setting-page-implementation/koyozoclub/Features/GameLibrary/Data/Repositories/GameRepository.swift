@@ -21,13 +21,14 @@ struct PaginatedGamesResult {
 // MARK: - Protocol
 
 protocol GameRepositoryProtocol {
-    /// Fetch games with pagination, sorting, and optional search
+    /// Fetch games with pagination, sorting, optional search, and optional category filter
     func fetchGames(
         pageNumber: Int,
         pageSize: Int,
         sortBy: String,
         sortOrder: String,
-        search: String?
+        search: String?,
+        category: String?
     ) async throws -> PaginatedGamesResult
     
     /// Fetch recent games from local storage
@@ -38,6 +39,9 @@ protocol GameRepositoryProtocol {
     
     /// Fetch cached games for dashboard (instant load)
     func fetchCachedGames() async throws -> [Game]
+    
+    /// Fetch cached games for a category (instant load)
+    func fetchCachedCategoryGames(category: String) async throws -> [Game]
     
     /// Fetch a single game by ID
     func fetchGame(by id: String) async throws -> Game
@@ -57,23 +61,25 @@ final class GameRepository: GameRepositoryProtocol {
         self.localDataSource = localDataSource ?? GameLocalDataSource()
     }
     
-    /// Fetch games with pagination, sorting, and optional search
+    /// Fetch games with pagination, sorting, optional search, and optional category filter
     /// - Parameters:
     ///   - pageNumber: Page number (0-indexed)
     ///   - pageSize: Number of games per page
     ///   - sortBy: Field to sort by (rating, title, createdAt, updatedAt)
     ///   - sortOrder: Sort direction (asc or desc)
     ///   - search: Optional search term
+    ///   - category: Optional category name to filter games
     /// - Returns: PaginatedGamesResult with games and pagination metadata
     func fetchGames(
         pageNumber: Int,
         pageSize: Int,
         sortBy: String,
         sortOrder: String,
-        search: String?
+        search: String?,
+        category: String? = nil
     ) async throws -> PaginatedGamesResult {
-        // For dashboard queries (first page, no search), try cache first
-        let isDashboardQuery = pageNumber == 0 && search == nil
+        // For dashboard queries (first page, no search, no category), try cache first
+        let isDashboardQuery = pageNumber == 0 && search == nil && category == nil
         
         // Fetch from remote API
         let response = try await remoteDataSource.fetchGames(
@@ -81,7 +87,8 @@ final class GameRepository: GameRepositoryProtocol {
             pageSize: pageSize,
             sortBy: sortBy,
             sortOrder: sortOrder,
-            search: search
+            search: search,
+            category: category
         )
         
         // Convert DTOs to domain models
@@ -91,6 +98,11 @@ final class GameRepository: GameRepositoryProtocol {
         if isDashboardQuery {
             Task {
                 try? await localDataSource.saveGames(games)
+            }
+        } else if let category = category, pageNumber == 0 && search == nil {
+            // Cache category games for offline access
+            Task {
+                try? await localDataSource.saveCategoryGames(games, category: category)
             }
         }
         
@@ -132,6 +144,11 @@ final class GameRepository: GameRepositoryProtocol {
     /// Fetch games from cache (for dashboard)
     func fetchCachedGames() async throws -> [Game] {
         return try await localDataSource.fetchGames()
+    }
+    
+    /// Fetch cached games for a category
+    func fetchCachedCategoryGames(category: String) async throws -> [Game] {
+        return try await localDataSource.fetchCategoryGames(category: category)
     }
     
     /// Fetch a single game by ID

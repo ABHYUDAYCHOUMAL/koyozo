@@ -11,7 +11,7 @@ enum Constants {
         /// Default number of games per page for pagination
         static let defaultPageSize = 20
         
-        /// Number of top games to show on Dashboard
+        /// Number of top games to show on Dashboard (first row only)
         static let dashboardGameCount = 10
         
         /// Default sort field for games

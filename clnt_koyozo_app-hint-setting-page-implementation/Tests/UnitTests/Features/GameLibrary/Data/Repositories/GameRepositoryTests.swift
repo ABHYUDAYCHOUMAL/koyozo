@@ -38,8 +38,19 @@ final class GameRepositoryTests: XCTestCase {
 
 // MARK: - Mock Data Sources
 class MockGameRemoteDataSource: GameRemoteDataSourceProtocol {
-    func fetchGames() async throws -> [Game] {
-        return []
+    func fetchGames(
+        pageNumber: Int,
+        pageSize: Int,
+        sortBy: String,
+        sortOrder: String,
+        search: String?,
+        category: String?
+    ) async throws -> iOSGamesDataDTO {
+        return iOSGamesDataDTO(
+            games: [],
+            pagination: PaginationDTO(pageNumber: pageNumber, pageSize: pageSize, totalPages: 0, totalItems: 0),
+            sort: SortDTO(sortBy: sortBy, sortOrder: sortOrder)
+        )
     }
     
     func fetchCategories() async throws -> [GameCategory] {

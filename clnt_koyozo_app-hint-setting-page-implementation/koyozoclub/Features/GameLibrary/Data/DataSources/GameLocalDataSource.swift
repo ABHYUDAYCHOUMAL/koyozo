@@ -9,6 +9,8 @@ protocol GameLocalDataSourceProtocol {
     func saveGames(_ games: [Game]) async throws
     func saveGame(_ game: Game) async throws
     func markGameAsRecent(_ game: Game) async throws
+    func fetchCategoryGames(category: String) async throws -> [Game]
+    func saveCategoryGames(_ games: [Game], category: String) async throws
 }
 
 final class GameLocalDataSource: GameLocalDataSourceProtocol {
@@ -71,6 +73,19 @@ final class GameLocalDataSource: GameLocalDataSourceProtocol {
             recentGames = Array(recentGames.prefix(20))
         }
         try await userDefaultsManager.save(recentGames, forKey: recentGamesKey)
+    }
+    
+    func fetchCategoryGames(category: String) async throws -> [Game] {
+        let categoryKey = "koyozoclub.cached.category.\(category)"
+        if let cachedGames: [Game] = try? await userDefaultsManager.fetch([Game].self, forKey: categoryKey) {
+            return cachedGames
+        }
+        return []
+    }
+    
+    func saveCategoryGames(_ games: [Game], category: String) async throws {
+        let categoryKey = "koyozoclub.cached.category.\(category)"
+        try await userDefaultsManager.save(games, forKey: categoryKey)
     }
 }
 

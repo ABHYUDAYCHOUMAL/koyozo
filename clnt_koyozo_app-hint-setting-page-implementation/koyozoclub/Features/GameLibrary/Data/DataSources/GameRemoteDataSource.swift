@@ -5,13 +5,14 @@ import Foundation
 // MARK: - Protocol
 
 protocol GameRemoteDataSourceProtocol {
-    /// Fetch games with pagination, sorting, and optional search
+    /// Fetch games with pagination, sorting, optional search, and optional category filter
     func fetchGames(
         pageNumber: Int,
         pageSize: Int,
         sortBy: String,
         sortOrder: String,
-        search: String?
+        search: String?,
+        category: String?
     ) async throws -> iOSGamesDataDTO
     
     /// Fetch a single game by ID
@@ -24,7 +25,7 @@ protocol GameRemoteDataSourceProtocol {
 // MARK: - iOS Games API Endpoints
 
 /// Endpoint for fetching paginated games list
-/// GET /ios-games?pageSize=20&pageNumber=0&sortBy=rating&sortOrder=desc&search=optional
+/// GET /ios-games?pageSize=20&pageNumber=0&sortBy=rating&sortOrder=desc&search=optional&category=optional
 struct iOSGamesEndpoint: APIEndpoint {
     let path: String = "/ios-games"
     let method: HTTPMethod = .get
@@ -37,7 +38,8 @@ struct iOSGamesEndpoint: APIEndpoint {
         pageSize: Int = Constants.API.defaultPageSize,
         sortBy: String = Constants.API.defaultSortBy,
         sortOrder: String = Constants.API.defaultSortOrder,
-        search: String? = nil
+        search: String? = nil,
+        category: String? = nil
     ) {
         var params: [String: String] = [
             "pageNumber": String(pageNumber),
@@ -48,6 +50,10 @@ struct iOSGamesEndpoint: APIEndpoint {
         
         if let search = search, !search.isEmpty {
             params["search"] = search
+        }
+        
+        if let category = category, !category.isEmpty {
+            params["category"] = category
         }
         
         self.queryParameters = params
@@ -77,27 +83,30 @@ final class GameRemoteDataSource: GameRemoteDataSourceProtocol {
         self.apiClient = apiClient ?? AppDependencies.shared.apiClient
     }
     
-    /// Fetch games with pagination, sorting, and optional search
+    /// Fetch games with pagination, sorting, optional search, and optional category filter
     /// - Parameters:
     ///   - pageNumber: Page number (0-indexed)
     ///   - pageSize: Number of games per page
     ///   - sortBy: Field to sort by (title, rating, createdAt, updatedAt, app_store_id)
     ///   - sortOrder: Sort order (asc or desc)
     ///   - search: Optional search term to filter games
+    ///   - category: Optional category name to filter games (e.g., "New Tryouts", "Popular in India Today")
     /// - Returns: iOSGamesDataDTO containing games, pagination, and sort info
     func fetchGames(
         pageNumber: Int,
         pageSize: Int,
         sortBy: String,
         sortOrder: String,
-        search: String?
+        search: String?,
+        category: String? = nil
     ) async throws -> iOSGamesDataDTO {
         let endpoint = iOSGamesEndpoint(
             pageNumber: pageNumber,
             pageSize: pageSize,
             sortBy: sortBy,
             sortOrder: sortOrder,
-            search: search
+            search: search,
+            category: category
         )
         
         do {

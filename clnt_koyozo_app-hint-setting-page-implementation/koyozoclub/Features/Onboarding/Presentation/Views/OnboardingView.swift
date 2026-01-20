@@ -187,7 +187,7 @@ struct OnboardingPageContentView: View {
                         height: min(200, geometry.size.width * 0.45)
                     )
                 
-                // Controller illustration or system icon
+                // Controlgler illustration or system icon
                 if page.id == 1 {
                     // Use actual controller image
                     Image("controller_diagram")
@@ -199,54 +199,20 @@ struct OnboardingPageContentView: View {
                     Image(systemName: getSystemImageName(for: page.id))
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-//                        .frame(width: min(350, geometry.size.width * 0.3))
                         .frame(width: 100, height: 100)
                         .foregroundColor(AppTheme.Colors.accent)
                 }
-//                if page.id == 1 {
-//                    // Page 2: Show actual controller image
-//                    // TODO: Replace with actual controller image from assets
-//                    Image(systemName: "gamecontroller.fill")
-//                        .resizable()
-//                        .aspectRatio(contentMode: .fit)
-//                        .frame(width: min(300, geometry.size.width * 0.5))
-//                        .foregroundColor(.gray.opacity(0.3))
-//                } else {
-//                    // Other pages: Use system icons as placeholders
-//                    Image(systemName: getSystemImageName(for: page.id))
-//                        .resizable()
-//                        .aspectRatio(contentMode: .fit)
-//                        .frame(width: 100, height: 100)
-//                        .foregroundColor(AppTheme.Colors.accent)
-//                }
             }
             .padding(.bottom,-20)
             .padding(.top, 10)
-            
-            // Image dimensions text (like "328 x 168" in your reference)
-//            if page.id == 1 {
-//                Text("328 × 168")
-//                    .font(.system(size: 14, weight: .medium))
-//                    .foregroundColor(.blue)
-//                    .padding(.bottom, Spacing.xs)
-//            }
-            
-            // Controller hint text (like "Use Y for Pin/unpin")
-//            if let hint = page.controllerHint {
-//                Text(hint)
-//                    .font(.system(size: 14, weight: .medium))
-//                    .foregroundColor(.blue)
-//                    .padding(.top, -10)
-//            }
             
             // Title
             Text(page.title)
                 .padding(.bottom, -3)
                 .padding(.top, -3)
                 .font(.system(size: 22, weight: .bold))
-                .foregroundColor(.primary)
+                .foregroundColor(.white)
                 .multilineTextAlignment(.center)
-//                .padding(.horizontal, Spacing.xl)
             
             // Description
             Text(page.description)
@@ -255,7 +221,7 @@ struct OnboardingPageContentView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Spacing.xl)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, -30)
+                .padding(.top, -25)
             
             Spacer()
         }

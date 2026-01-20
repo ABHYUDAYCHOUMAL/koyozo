@@ -26,11 +26,11 @@ struct GoogleSignInButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, Spacing.md)
-            .background(Color(hex: "21214E"))
+            .background(AppTheme.Colors.inputBackground)
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(isFocused ? Color.white : Color.white, lineWidth: isFocused ? 3 : 1)
+                    .stroke(AppTheme.Colors.primary, lineWidth: isFocused ? 3 : 1)
             )
             .scaleEffect(isFocused ? 1.05 : 1.0)
         }
